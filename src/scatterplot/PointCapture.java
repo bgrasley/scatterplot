@@ -8,7 +8,11 @@ package scatterplot;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 
 /**
  *
@@ -22,17 +26,18 @@ public class PointCapture extends javax.swing.JFrame {
     private int yMax = 100;
 
     private Graphics plotGraph;
+    private BufferedImage plotImage;
 
     /**
      * Creates new form PointCapture
      */
     public PointCapture() {
         initComponents();
-        BufferedImage img = new BufferedImage(plotAreaLabel.getWidth(), plotAreaLabel.getHeight(), BufferedImage.TYPE_INT_RGB);
-        plotAreaLabel.setIcon(new ImageIcon(img));
-        plotGraph = img.getGraphics();
+        plotImage = new BufferedImage(plotAreaLabel.getWidth(), plotAreaLabel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        plotAreaLabel.setIcon(new ImageIcon(plotImage));
+        plotGraph = plotImage.getGraphics();
         plotGraph.setColor(Color.WHITE);
-        plotGraph.fillRect(0, 0, img.getWidth(), img.getHeight());
+        plotGraph.fillRect(0, 0, plotImage.getWidth(), plotImage.getHeight());
         plotGraph.setColor(Color.BLACK);
     }
 
@@ -162,7 +167,21 @@ public class PointCapture extends javax.swing.JFrame {
     }//GEN-LAST:event_yMaxFieldActionPerformed
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
-        messageLabel.setText("Not implemented yet");
+        JFileChooser chooser = new JFileChooser();
+        int returnVal = chooser.showSaveDialog(this);
+        File outputFile = null;
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            outputFile = chooser.getSelectedFile();
+            messageLabel.setText("Saving file...");
+            try {
+                ImageIO.write(plotImage, "PNG", outputFile);
+                messageLabel.setText("File saved!");
+            } catch (IOException ioe) {
+                messageLabel.setText("Error saving file!");
+            }
+        } else {
+            messageLabel.setText("Save operation cancelled.");
+        }
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void plotAreaLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_plotAreaLabelMousePressed
@@ -172,7 +191,7 @@ public class PointCapture extends javax.swing.JFrame {
         int w = plotAreaLabel.getWidth();
         int yPos = yMin + (yMax - yMin) * (h - y) / h;
         int xPos = xMin + (xMax - xMin) * x / w;
-        
+
         plotGraph.fillOval(x, y, 10, 10);
         if (resultsField.getText().equals("")) {
             resultsField.append(xPos + "\t" + yPos);
