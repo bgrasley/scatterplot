@@ -5,12 +5,10 @@
  */
 package scatterplot;
 
+import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 /**
  *
@@ -30,7 +28,12 @@ public class PointCapture extends javax.swing.JFrame {
      */
     public PointCapture() {
         initComponents();
-        plotGraph = plotAreaLabel.getGraphics();
+        BufferedImage img = new BufferedImage(plotAreaLabel.getWidth(), plotAreaLabel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        plotAreaLabel.setIcon(new ImageIcon(img));
+        plotGraph = img.getGraphics();
+        plotGraph.setColor(Color.WHITE);
+        plotGraph.fillRect(0, 0, img.getWidth(), img.getHeight());
+        plotGraph.setColor(Color.BLACK);
     }
 
     /**
@@ -43,7 +46,7 @@ public class PointCapture extends javax.swing.JFrame {
     private void initComponents() {
 
         messageLabel = new javax.swing.JLabel();
-        plotAreaLabel = new javax.swing.JPanel();
+        plotAreaLabel = new javax.swing.JLabel();
         parameterPanel = new javax.swing.JPanel();
         xMinLabel = new javax.swing.JLabel();
         xMinField = new javax.swing.JTextField();
@@ -54,6 +57,8 @@ public class PointCapture extends javax.swing.JFrame {
         xMaxField = new javax.swing.JTextField();
         yMaxLabel = new javax.swing.JLabel();
         yMaxField = new javax.swing.JTextField();
+        resultsFieldScrollPane = new javax.swing.JScrollPane();
+        resultsField = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(1280, 720));
@@ -62,23 +67,12 @@ public class PointCapture extends javax.swing.JFrame {
         getContentPane().add(messageLabel, java.awt.BorderLayout.PAGE_END);
 
         plotAreaLabel.setBackground(new java.awt.Color(255, 255, 255));
+        plotAreaLabel.setForeground(new java.awt.Color(255, 255, 255));
         plotAreaLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                plotAreaLabelMouseClicked(evt);
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                plotAreaLabelMousePressed(evt);
             }
         });
-
-        javax.swing.GroupLayout plotAreaLabelLayout = new javax.swing.GroupLayout(plotAreaLabel);
-        plotAreaLabel.setLayout(plotAreaLabelLayout);
-        plotAreaLabelLayout.setHorizontalGroup(
-            plotAreaLabelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 515, Short.MAX_VALUE)
-        );
-        plotAreaLabelLayout.setVerticalGroup(
-            plotAreaLabelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 276, Short.MAX_VALUE)
-        );
-
         getContentPane().add(plotAreaLabel, java.awt.BorderLayout.CENTER);
 
         parameterPanel.setLayout(new java.awt.GridLayout(2, 4));
@@ -141,25 +135,19 @@ public class PointCapture extends javax.swing.JFrame {
 
         getContentPane().add(parameterPanel, java.awt.BorderLayout.PAGE_START);
 
+        resultsField.setEditable(false);
+        resultsField.setColumns(20);
+        resultsField.setRows(5);
+        resultsFieldScrollPane.setViewportView(resultsField);
+
+        getContentPane().add(resultsFieldScrollPane, java.awt.BorderLayout.LINE_END);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void xMinFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xMinFieldActionPerformed
         updateLimits();
     }//GEN-LAST:event_xMinFieldActionPerformed
-
-    private void plotAreaLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_plotAreaLabelMouseClicked
-        int x = evt.getX();
-        int y = evt.getY();
-        int h = plotAreaLabel.getHeight();
-        int w = plotAreaLabel.getWidth();
-        int yPos = yMin + (yMax - yMin) * (h - y) / h;
-        int xPos = xMin + (xMax - xMin) * x / w;
-
-        plotGraph.fillOval(x, y, 10, 10);
-        System.out.println(xPos + "\t" + yPos);
-
-    }//GEN-LAST:event_plotAreaLabelMouseClicked
 
     private void xMaxFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xMaxFieldActionPerformed
         updateLimits();
@@ -176,6 +164,23 @@ public class PointCapture extends javax.swing.JFrame {
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         messageLabel.setText("Not implemented yet");
     }//GEN-LAST:event_saveButtonActionPerformed
+
+    private void plotAreaLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_plotAreaLabelMousePressed
+        int x = evt.getX();
+        int y = evt.getY();
+        int h = plotAreaLabel.getHeight();
+        int w = plotAreaLabel.getWidth();
+        int yPos = yMin + (yMax - yMin) * (h - y) / h;
+        int xPos = xMin + (xMax - xMin) * x / w;
+        
+        plotGraph.fillOval(x, y, 10, 10);
+        if (resultsField.getText().equals("")) {
+            resultsField.append(xPos + "\t" + yPos);
+        } else {
+            resultsField.append("\n" + xPos + "\t" + yPos);
+        }
+        plotAreaLabel.repaint();
+    }//GEN-LAST:event_plotAreaLabelMousePressed
 
     private void updateLimits() {
         int xMinTemp, xMaxTemp, yMinTemp, yMaxTemp = 0;
@@ -236,7 +241,9 @@ public class PointCapture extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel messageLabel;
     private javax.swing.JPanel parameterPanel;
-    private javax.swing.JPanel plotAreaLabel;
+    private javax.swing.JLabel plotAreaLabel;
+    private javax.swing.JTextArea resultsField;
+    private javax.swing.JScrollPane resultsFieldScrollPane;
     private javax.swing.JButton saveButton;
     private javax.swing.JTextField xMaxField;
     private javax.swing.JLabel xMaxLabel;
